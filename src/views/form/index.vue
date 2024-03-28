@@ -1,49 +1,15 @@
 <template>
-  <div class="app-container">
-    <el-form ref="form" :model="form" label-width="120px">
-      <el-form-item label="Activity name">
-        <el-input v-model="form.name" />
-      </el-form-item>
-      <el-form-item label="Activity zone">
-        <el-select v-model="form.region" placeholder="please select your zone">
-          <el-option label="Zone one" value="shanghai" />
-          <el-option label="Zone two" value="beijing" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="Activity time">
-        <el-col :span="11">
-          <el-date-picker v-model="form.date1" type="date" placeholder="Pick a date" style="width: 100%;" />
-        </el-col>
-        <el-col :span="2" class="line">-</el-col>
-        <el-col :span="11">
-          <el-time-picker v-model="form.date2" type="fixed-time" placeholder="Pick a time" style="width: 100%;" />
-        </el-col>
-      </el-form-item>
-      <el-form-item label="Instant delivery">
-        <el-switch v-model="form.delivery" />
-      </el-form-item>
-      <el-form-item label="Activity type">
-        <el-checkbox-group v-model="form.type">
-          <el-checkbox label="Online activities" name="type" />
-          <el-checkbox label="Promotion activities" name="type" />
-          <el-checkbox label="Offline activities" name="type" />
-          <el-checkbox label="Simple brand exposure" name="type" />
-        </el-checkbox-group>
-      </el-form-item>
-      <el-form-item label="Resources">
-        <el-radio-group v-model="form.resource">
-          <el-radio label="Sponsor" />
-          <el-radio label="Venue" />
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="Activity form">
-        <el-input v-model="form.desc" type="textarea" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit">Create</el-button>
-        <el-button @click="onCancel">Cancel</el-button>
-      </el-form-item>
-    </el-form>
+  <div>
+    <h2 class="title">准确率</h2>
+    <div class="backend-number-box">
+      <span>{{ backendNumber }}</span>
+    </div>
+
+    <h2 class="title">选择文件：</h2>
+    <ul class="file-list">
+      <li v-for="file in files" :key="file.id" class="file-item" @click="processFile(file)">{{ file.name }}</li>
+    </ul>
+
   </div>
 </template>
 
@@ -51,35 +17,92 @@
 export default {
   data() {
     return {
-      form: {
-        name: '',
-        region: '',
-        date1: '',
-        date2: '',
-        delivery: false,
-        type: [],
-        resource: '',
-        desc: ''
-      }
-    }
+      files: []
+    };
+  },
+  mounted() {
+    this.getFileList(); // 在组件挂载后立即获取文件列表数据
   },
   methods: {
-    onSubmit() {
-      this.$message('submit!')
-    },
-    onCancel() {
+    handleSuccess(response, file, fileList) {
       this.$message({
-        message: 'cancel!',
-        type: 'warning'
-      })
+        message: '文件上传成功',
+        type: 'success'
+      });
+      // 上传成功后重新获取文件列表
+      this.getFileList();
+    },
+    beforeUpload(file) {
+      // 在这里可以进行文件类型和大小的校验
+      return true;
+    },
+    async getFileList() {
+      try {
+        const response = await fetch('http://localhost:8080/files'); // 请替换为你的后端接口地址
+        const data = await response.json();
+        this.files = data.map((file, index) => ({ id: index, name: file }));
+      } catch (error) {
+        console.error('Error fetching file list:', error);
+      }
+    },
+    async processFile(file) {
+      try {
+        const response = await fetch(`http://localhost:8080/api/process?fileName=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          // 可以根据后端要求设置请求头和其他参数
+        });
+        const result = await response.json();
+        console.log('处理结果：', result);
+      } catch (error) {
+        console.error('Error processing file:', error);
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-.line{
+.upload-demo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  border: 1px dashed #409EFF;
+  border-radius: 6px;
+  background-color: #f0f0f0;
+  color: #909399;
+  cursor: pointer;
+}
+
+.title {
   text-align: center;
 }
-</style>
 
+.file-list {
+  list-style: none;
+  padding: 0;
+  text-align: center;
+}
+
+.file-item {
+  background-color: #f0f0f0;
+  padding: 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer; /* 添加鼠标指针样式，表明可以点击 */
+}
+
+.backend-number-box {
+  margin-top: 20px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.backend-number-box span {
+  padding: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+}
+</style>
