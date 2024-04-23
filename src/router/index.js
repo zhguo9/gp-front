@@ -78,6 +78,18 @@ export const constantRoutes = [
   // },
 
   {
+    path: '/pretrain',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Form',
+        component: () => import('@/views/pretrain/index'),
+        meta: { title: '预训练模型', icon: 'form' }
+      }
+    ]
+  },
+  {
     path: '/form',
     component: Layout,
     children: [
@@ -85,7 +97,7 @@ export const constantRoutes = [
         path: 'index',
         name: 'Form',
         component: () => import('@/views/form/index'),
-        meta: { title: '模型分词', icon: 'form' }
+        meta: { title: '迁移学习', icon: 'form' }
       }
     ]
   },
