@@ -17,7 +17,8 @@
   export default {
     data() {
       return {
-        files: []
+        files: [],
+        backendNumber: ''
       };
     },
     mounted() {
@@ -47,12 +48,22 @@
       },
       async processFile(file) {
         try {
+          this.$message({
+            message: '正在进行分词，请稍后',
+            type: 'info'
+          });
+          this.$set(this, 'backendNumber', 0);
           const response = await fetch(`http://localhost:8080/api/process?fileName=${encodeURIComponent(file.name)}`, {
             method: 'POST',
             // 可以根据后端要求设置请求头和其他参数
           });
-          const result = await response.json();
-          console.log('处理结果：', result);
+          const result = await response.text();
+          console.log(result);
+          const lines = result.split('\n');
+          console.log(lines)
+          const lastLine = lines[lines.length - 2];
+          console.log(lastLine)
+          this.$set(this, 'backendNumber', lastLine);
         } catch (error) {
           console.error('Error processing file:', error);
         }

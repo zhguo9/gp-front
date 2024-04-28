@@ -90,7 +90,7 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/form',
+    path: '/transfer',
     component: Layout,
     children: [
       {
