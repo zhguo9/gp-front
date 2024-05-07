@@ -5,7 +5,7 @@
         <span>{{ backendNumber }}</span>
       </div>
   
-      <h2 class="title">选择文件：</h2>
+      <h2 class="title">选择FNA文件：</h2>
       <ul class="file-list">
         <li v-for="file in files" :key="file.id" class="file-item" @click="processFile(file)">{{ file.name }}</li>
       </ul>
@@ -53,7 +53,7 @@
             type: 'info'
           });
           this.$set(this, 'backendNumber', 0);
-          const response = await fetch(`http://localhost:8080/api/process?fileName=${encodeURIComponent(file.name)}`, {
+          const response = await fetch(`http://localhost:8080/api/pretrain?fileName=${encodeURIComponent(file.name)}`, {
             method: 'POST',
             // 可以根据后端要求设置请求头和其他参数
           });

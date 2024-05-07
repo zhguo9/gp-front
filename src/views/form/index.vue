@@ -1,14 +1,28 @@
 <template>
   <div>
-    <h2 class="title">准确率</h2>
-    <div class="backend-number-box">
-      <span>{{ backendNumber }}</span>
-    </div>
-
-    <h2 class="title">选择文件：</h2>
+    <h2 class="title">选择FNA文件</h2>
     <ul class="file-list">
       <li v-for="file in files" :key="file.id" class="file-item" @click="processFile(file)">{{ file.name }}</li>
     </ul>
+
+    <h2 class="title">分词结果</h2>
+    <!-- 新增的输出框 -->
+    <div class="container">
+      <div class="textarea-container">
+        <div class="title-container">
+          <h3>模型分词结果</h3>
+          <div class="spacer"></div> <!-- 空白的 div 元素 -->
+          <button @click="saveToExcel">保存到本地文件</button> <!-- 新增的按钮 -->
+        </div>
+        <textarea v-model="output1" rows="40" cols="80" readonly></textarea>
+      </div>
+      <div class="textarea-container">
+        <div class="title-container">
+          <h3>原有位点</h3>
+        </div>
+        <textarea v-model="output2" rows="40" cols="80" readonly></textarea>
+      </div>
+    </div>
 
   </div>
 </template>
@@ -18,7 +32,9 @@ export default {
   data() {
     return {
       files: [],
-      backendNumber: ''
+      backendNumber: '',
+      output1: '',
+      output2: '',
     };
   },
   mounted() {
@@ -52,7 +68,7 @@ export default {
           message: '正在进行分词，请稍后',
           type: 'info'
         });
-        this.$set(this, 'backendNumber', 0);
+        // this.$set(this, 'backendNumber', 0);
         const response = await fetch(`http://localhost:8080/api/process?fileName=${encodeURIComponent(file.name)}`, {
           method: 'POST',
           // 可以根据后端要求设置请求头和其他参数
@@ -60,13 +76,19 @@ export default {
         const result = await response.text();
         console.log(result);
         const lines = result.split('\n');
-        console.log(lines)
-        const lastLine = lines[lines.length - 2];
-        console.log(lastLine)
-        this.$set(this, 'backendNumber', lastLine);
+        // console.log(lines)
+        // const lastLine = lines[lines.length - 2];
+        // 排除第一行
+        const remainingLines = lines.slice(1);
+        // 将剩余行连接起来
+        const output = remainingLines.join('\n');
+        this.$set(this, 'output1', output);
       } catch (error) {
         console.error('Error processing file:', error);
       }
+    },
+    saveToExcel() {
+
     }
   }
 }
@@ -91,17 +113,24 @@ export default {
 
 .file-list {
   list-style: none;
-  padding: 0;
+  /* padding: 0; */
   text-align: center;
 }
 
 .file-item {
   background-color: #f0f0f0;
+  display: inline-block;
   padding: 10px;
   margin-bottom: 5px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer; /* 添加鼠标指针样式，表明可以点击 */
+  /* font-size: 50; */
+}
+
+.title-container {
+  display: flex;
+  justify-content: center;
 }
 
 .backend-number-box {
@@ -115,5 +144,20 @@ export default {
   padding: 10px;
   background-color: #e0e0e0;
   border-radius: 5px;
+}
+
+.spacer {
+  flex: 0.2; /* 占据剩余的空间 */
+}
+
+.container {
+  display: flex;
+  width: 100%;
+}
+
+.textarea-container {
+  flex: 1;
+  margin: 10px;
+  width: 50%;
 }
 </style>
