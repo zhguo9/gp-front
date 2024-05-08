@@ -1,9 +1,19 @@
 <template>
   <div>
-    <h2 class="title">选择FNA文件</h2>
-    <ul class="file-list">
-      <li v-for="file in files" :key="file.id" class="file-item" @click="processFile(file)">{{ file.name }}</li>
-    </ul>
+    <div class="container">
+    <!-- 左侧功能 -->
+    <div class="left">
+      <h2 class="title">选择FNA文件</h2>
+      <ul class="file-list">
+        <li v-for="file in files" :key="file.id" class="file-item" @click="processFile(file)">{{ file.name }}</li>
+      </ul>
+    </div>
+
+    <!-- 右侧图片 -->
+    <div class="right">
+      <img src="../../assets/transfer.png" alt="图片" style="width: 600px; height: auto;">
+    </div>
+  </div>
 
     <h2 class="title">分词结果</h2>
     <!-- 新增的输出框 -->
@@ -68,6 +78,7 @@ export default {
           message: '正在进行分词，请稍后',
           type: 'info'
         });
+        //进行分词
         // this.$set(this, 'backendNumber', 0);
         const response = await fetch(`http://localhost:8080/api/process?fileName=${encodeURIComponent(file.name)}`, {
           method: 'POST',
@@ -83,12 +94,43 @@ export default {
         // 将剩余行连接起来
         const output = remainingLines.join('\n');
         this.$set(this, 'output1', output);
+
+        //得到原位点
+        const response1 = await fetch(`http://localhost:8080/api/getoriginal?fileName=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          // 可以根据后端要求设置请求头和其他参数
+        });
+        const result1 = await response1.text();
+        const lines1 = result1.split('\n');
+        // 排除第一行
+        // const remainingLines1 = lines1.slice(1);
+        // 将剩余行连接起来
+        const outputt = lines1.join('\n');
+        this.$set(this, 'output2', outputt);
+        
+        this.$message({
+          message: '分词完成！',
+          type: 'success'
+        });
       } catch (error) {
         console.error('Error processing file:', error);
       }
     },
     saveToExcel() {
-
+      const XLSX = require('xlsx');
+      const wb = XLSX.utils.book_new();
+      
+      // 将 output1 按行分割成二维数组，并去除每个词两侧的空格
+      const rows = this.output1.split('\n').map(row => row.split(/\s*\|\s*/).map(word => word.trim()));
+      
+      // 将二维数组转换为工作表
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      
+      // 将工作表添加到工作簿
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      
+      // 写入到文件
+      XLSX.writeFile(wb, 'output.xlsx');
     }
   }
 }
@@ -106,11 +148,16 @@ export default {
   color: #909399;
   cursor: pointer;
 }
-
 .title {
   text-align: center;
 }
-
+.left {
+  flex: 1; /* 左侧占据剩余空间 */
+  margin-right: 20px; /* 右侧留出 20 像素的间距 */
+}
+.right {
+  flex: 1; /* 右侧占据剩余空间 */
+}
 .file-list {
   list-style: none;
   /* padding: 0; */
@@ -122,6 +169,7 @@ export default {
   display: inline-block;
   padding: 10px;
   margin-bottom: 5px;
+  margin-right: 20px; /* 添加水平间距 */
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer; /* 添加鼠标指针样式，表明可以点击 */

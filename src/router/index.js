@@ -102,18 +102,18 @@ export const constantRoutes = [
     ]
   },
 
-  {
-    path: '/result',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Result',
-        component: () => import('@/views/result/index'),
-        meta: { title: '分词结果', icon: 'form'}
-      }
-    ]
-  },
+  // {
+  //   path: '/result',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'Result',
+  //       component: () => import('@/views/result/index'),
+  //       meta: { title: '分词结果', icon: 'form'}
+  //     }
+  //   ]
+  // },
 
   // {
   //   path: '/nested',
